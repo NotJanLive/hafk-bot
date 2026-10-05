@@ -14,6 +14,8 @@ import de.notjan.bot.guild.GuildSettingsService;
 import de.notjan.bot.guild.GuildSettingsValidator.InvalidSettingsException;
 import de.notjan.bot.guild.SettingsUpdater;
 import io.javalin.http.Context;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 
 import java.util.List;
 import java.util.Set;
@@ -80,7 +82,16 @@ public final class GuildController implements ApiController {
     private void auditLog(Context ctx) {
         GuildRequest request = guard.require(ctx);
         int limit = Math.clamp(ctx.queryParamAsClass("limit", Integer.class).getOrDefault(DEFAULT_AUDIT_LIMIT), 1, MAX_AUDIT_LIMIT);
-        ctx.json(audit.recent(request.guild().getIdLong(), limit).stream().map(AuditEntryDto::of).toList());
+        Guild guild = request.guild();
+        ctx.json(audit.recent(guild.getIdLong(), limit).stream()
+                .map(entry -> AuditEntryDto.of(entry, cachedName(guild, entry.userId())))
+                .toList());
+    }
+
+    /** Uses the member cache only; resolving unknown users via REST would be too expensive per entry. */
+    private static String cachedName(Guild guild, long userId) {
+        Member member = guild.getMemberById(userId);
+        return member == null ? null : member.getUser().getName();
     }
 
     private static SettingsDto readBody(Context ctx) {
