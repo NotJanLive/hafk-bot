@@ -7,7 +7,7 @@ import java.awt.Color;
  */
 public final class Brand {
 
-    public static final String NAME = "HAF Kooperation";
+    public static final String NAME = "HAFK-Bot";
 
     public static final Color PRIMARY = new Color(0x5B6CFF);
     public static final Color WARNING = new Color(0xF5A524);

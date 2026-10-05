@@ -13,7 +13,7 @@ import java.util.List;
 import static io.javalin.apibuilder.ApiBuilder.path;
 
 /**
- * Internal REST API consumed by the dashboard backend. Binds to {@code API_HOST} (default localhost).
+ * Internal REST API consumed by the dashboard backend. Binds to {@code BOT_API_HOST} (default localhost).
  */
 public final class ApiServer implements AutoCloseable {
 

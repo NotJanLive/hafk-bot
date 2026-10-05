@@ -14,6 +14,6 @@ WORKDIR /app
 COPY --from=build /src/target/hafk-bot.jar app.jar
 USER hafk
 # The API must be reachable from the dashboard container, but is not published to the host.
-ENV API_HOST=0.0.0.0
+ENV BOT_API_HOST=0.0.0.0
 EXPOSE 8081
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]

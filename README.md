@@ -72,7 +72,7 @@ Use External Emojis, Manage Roles, Manage Channels, Manage Messages.
 
 ## API
 
-Alle Routen liegen unter `/api/v1` und verlangen `Authorization: Bearer <API_TOKEN>`. Ausgenommen ist `/health`.
+Alle Routen liegen unter `/api/v1` und verlangen `Authorization: Bearer <BOT_API_TOKEN>`. Ausgenommen ist `/health`.
 Server-bezogene Routen verlangen zusätzlich den Header `X-Acting-User: <discord-user-id>`. Der Bot prüft damit selbst, ob dieser Nutzer Zugriff hat.
 
 | Methode | Pfad | Beschreibung |

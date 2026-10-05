@@ -33,13 +33,13 @@ public record BotConfig(
     static BotConfig from(Function<String, String> env) {
         var reader = new EnvReader(env);
 
-        String apiToken = reader.required("API_TOKEN");
+        String apiToken = reader.required("BOT_API_TOKEN");
         if (apiToken.length() < MIN_API_TOKEN_LENGTH) {
-            throw new ConfigException("API_TOKEN must be at least " + MIN_API_TOKEN_LENGTH + " characters long");
+            throw new ConfigException("BOT_API_TOKEN must be at least " + MIN_API_TOKEN_LENGTH + " characters long");
         }
 
         return new BotConfig(
-                reader.required("DISCORD_TOKEN"),
+                reader.required("DISCORD_BOT_TOKEN"),
                 reader.optional("DISCORD_DEV_GUILD_ID").map(value -> reader.parseLong("DISCORD_DEV_GUILD_ID", value)),
                 stripTrailingSlash(reader.optional("DASHBOARD_URL").orElse("http://localhost:3000")),
                 new DatabaseConfig(
@@ -49,8 +49,8 @@ public record BotConfig(
                         reader.integer("DB_POOL_SIZE", 5)
                 ),
                 new ApiConfig(
-                        reader.optional("API_HOST").orElse("127.0.0.1"),
-                        reader.integer("API_PORT", 8081),
+                        reader.optional("BOT_API_HOST").orElse("127.0.0.1"),
+                        reader.integer("BOT_API_PORT", 8081),
                         apiToken
                 )
         );
