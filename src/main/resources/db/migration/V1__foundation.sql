@@ -3,7 +3,6 @@
 CREATE TABLE guild_settings
 (
     guild_id        BIGINT    NOT NULL PRIMARY KEY,
-    log_channel_id  BIGINT    NULL,
     setup_completed BOOLEAN   NOT NULL DEFAULT FALSE,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

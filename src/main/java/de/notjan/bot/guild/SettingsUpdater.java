@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -51,11 +50,6 @@ public final class SettingsUpdater {
 
     static List<String> describeChanges(GuildSettings before, GuildSettings after) {
         List<String> changes = new ArrayList<>();
-        if (!Objects.equals(before.logChannelId(), after.logChannelId())) {
-            changes.add(after.logChannel()
-                    .map(id -> "Log-Kanal auf <#" + id + "> gesetzt")
-                    .orElse("Log-Kanal deaktiviert"));
-        }
         if (!before.dashboardRoleIds().equals(after.dashboardRoleIds())) {
             String roles = after.dashboardRoleIds().isEmpty()
                     ? "keine"
@@ -70,7 +64,6 @@ public final class SettingsUpdater {
 
     private static Map<String, Object> details(GuildSettings settings) {
         Map<String, Object> details = new LinkedHashMap<>();
-        details.put("logChannelId", settings.logChannel().map(String::valueOf).orElse(null));
         details.put("dashboardRoleIds", settings.dashboardRoleIds().stream().sorted().map(String::valueOf).toList());
         details.put("setupCompleted", settings.setupCompleted());
         return details;

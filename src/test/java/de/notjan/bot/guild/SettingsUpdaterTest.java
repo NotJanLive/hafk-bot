@@ -17,14 +17,6 @@ class SettingsUpdaterTest {
     }
 
     @Test
-    void describesLogChannelChanges() {
-        GuildSettings withChannel = BASE.withLogChannel(42L);
-
-        assertEquals(List.of("Log-Kanal auf <#42> gesetzt"), SettingsUpdater.describeChanges(BASE, withChannel));
-        assertEquals(List.of("Log-Kanal deaktiviert"), SettingsUpdater.describeChanges(withChannel, BASE));
-    }
-
-    @Test
     void describesDashboardRolesSorted() {
         GuildSettings withRoles = BASE.withDashboardRoles(Set.of(30L, 10L));
 

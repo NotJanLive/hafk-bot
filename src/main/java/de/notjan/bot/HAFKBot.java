@@ -47,12 +47,12 @@ public final class HAFKBot {
         Database database = Database.connect(config.database());
 
         GuildSettingsService settings = new GuildSettingsService(new GuildSettingsRepository(database.jdbi()));
-        AuditLogService audit = new AuditLogService(new AuditLogRepository(database.jdbi()), settings, json);
+        AuditLogService audit = new AuditLogService(new AuditLogRepository(database.jdbi()), json);
         SettingsUpdater settingsUpdater = new SettingsUpdater(settings, audit);
         AccessService access = new AccessService(settings);
 
         List<BotModule> modules = List.of(
-                new SetupModule(settings, settingsUpdater, config.dashboardUrl())
+                new SetupModule(settings, config.dashboardUrl())
         );
         ModuleRegistry registry = new ModuleRegistry(modules);
 

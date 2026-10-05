@@ -26,12 +26,8 @@ public final class GuildSettingsRepository {
 
     public void save(GuildSettings settings) {
         jdbi.useTransaction(handle -> {
-            handle.createUpdate("""
-                            UPDATE guild_settings
-                            SET log_channel_id = :logChannelId, setup_completed = :setupCompleted
-                            WHERE guild_id = :guildId""")
+            handle.createUpdate("UPDATE guild_settings SET setup_completed = :setupCompleted WHERE guild_id = :guildId")
                     .bind("guildId", settings.guildId())
-                    .bind("logChannelId", settings.logChannelId())
                     .bind("setupCompleted", settings.setupCompleted())
                     .execute();
 
@@ -53,13 +49,9 @@ public final class GuildSettingsRepository {
                 .mapTo(Long.class)
                 .list());
 
-        return handle.createQuery("SELECT log_channel_id, setup_completed FROM guild_settings WHERE guild_id = :guildId")
+        return handle.createQuery("SELECT setup_completed FROM guild_settings WHERE guild_id = :guildId")
                 .bind("guildId", guildId)
-                .map((rs, ctx) -> new GuildSettings(
-                        guildId,
-                        rs.getObject("log_channel_id", Long.class),
-                        roleIds,
-                        rs.getBoolean("setup_completed")))
+                .map((rs, ctx) -> new GuildSettings(guildId, roleIds, rs.getBoolean("setup_completed")))
                 .one();
     }
 }

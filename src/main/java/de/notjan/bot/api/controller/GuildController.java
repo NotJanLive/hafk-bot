@@ -63,14 +63,12 @@ public final class GuildController implements ApiController {
         GuildRequest request = guard.require(ctx);
         SettingsDto body = readBody(ctx);
 
-        Long logChannelId = body.logChannelId() == null ? null : GuildGuard.snowflake(body.logChannelId(), "logChannelId");
         Set<Long> roleIds = (body.dashboardRoleIds() == null ? List.<String>of() : body.dashboardRoleIds()).stream()
                 .map(id -> GuildGuard.snowflake(id, "dashboardRoleIds"))
                 .collect(Collectors.toSet());
 
         try {
             GuildSettings updated = updater.apply(request.guild(), request.userId(), Source.DASHBOARD, current -> current
-                    .withLogChannel(logChannelId)
                     .withDashboardRoles(roleIds)
                     .withSetupCompleted(current.setupCompleted() || body.setupCompleted()));
             ctx.json(SettingsDto.of(updated));

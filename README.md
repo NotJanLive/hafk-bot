@@ -1,7 +1,8 @@
 # HAFK Bot
 
 Discord-Bot für die Hans & Friends Community. Java 25, [JDA 6](https://github.com/discord-jda/JDA), MariaDB.
-Konfiguriert wird er per `/setup` in Discord oder über das [HAFK Dashboard](https://github.com/NotJanLive/hafk-dashboard).
+Eingerichtet und konfiguriert wird er ausschließlich über das [HAFK Dashboard](https://github.com/NotJanLive/hafk-dashboard).
+Nach dem Einladen begrüßt der Bot den Server und verlinkt die Einrichtung. `/dashboard` öffnet den Link jederzeit erneut.
 
 ## Architektur
 
@@ -24,7 +25,7 @@ src/main/java/de/notjan/bot
 ├── core/               Modul-System, Slash-Commands, Komponenten-Routing
 ├── guild/              Server-Einstellungen (Cache, Validierung, Änderungen)
 ├── access/             Wer darf das Dashboard nutzen?
-├── audit/              Änderungsprotokoll (DB + Log-Kanal)
+├── audit/              Änderungsprotokoll (im Dashboard sichtbar)
 ├── api/                REST-API für das Dashboard
 └── modules/            Features, je ein Paket (setup, später tickets, reactionroles, …)
 ```
@@ -44,21 +45,23 @@ API-Controller und benötigte Intents. Registriert wird es in `HAFKBot.main`.
 3. `./mvnw package`, danach `java -jar target/hafk-bot.jar`. Alternativ `HAFKBot` direkt in IntelliJ starten.
 
 Die Tabellen legt Flyway beim Start automatisch an (`src/main/resources/db/migration`).
-Bestehende Migrationen werden nie geändert, Änderungen kommen immer als neue Datei `V<n>__beschreibung.sql`.
+Bis zum ersten Release wird nur `V1__foundation.sql` angepasst. Nach einer Schema-Änderung die lokale Datenbank leeren.
+Ab dem Release kommen Änderungen immer als neue Datei `V<n>__beschreibung.sql`.
 
 ## Discord Developer Portal
 
 | Bereich | Einstellung |
 |---|---|
-| Bot → Public Bot | aus |
+| Bot → Public Bot | **an**: Nur so können auch andere Server-Admins den Bot über das Dashboard einladen |
 | Bot → Requires OAuth2 Code Grant | aus |
 | Bot → Presence Intent | aus |
 | Bot → Server Members Intent | **an** (Rollenprüfung für das Dashboard) |
 | Bot → Message Content Intent | **an** (ab dem Ticket-Modul für Transcripts) |
 | Installation | nur *Guild Install* |
-| OAuth2 → Redirects | `http://localhost:3000/api/auth/callback/discord` + Produktions-URL |
+| OAuth2 → Redirects | `http://localhost:3000/api/auth/callback/discord` (Login) und `http://localhost:3000/api/invite/callback` (nach dem Einladen zurück ins Dashboard), später zusätzlich mit der Produktions-Domain |
 
-Einladungslink (Scopes `bot applications.commands`, **ohne Administrator**):
+Eingeladen wird über den Button „Bot hinzufügen“ in der Serverauswahl des Dashboards. Der manuelle Link
+(Scopes `bot applications.commands`, **ohne Administrator**):
 
 ```
 https://discord.com/oauth2/authorize?client_id=<CLIENT_ID>&scope=bot+applications.commands&permissions=268823632

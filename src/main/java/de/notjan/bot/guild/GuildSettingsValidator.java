@@ -1,16 +1,13 @@
 package de.notjan.bot.guild;
 
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Checks settings against the live guild state. Used by both the dashboard API and /setup,
- * so neither entry point can store references to missing or unusable channels and roles.
+ * Checks settings against the live guild state, so no references to missing or unusable roles are stored.
  */
 public final class GuildSettingsValidator {
 
@@ -22,16 +19,6 @@ public final class GuildSettingsValidator {
     public static List<String> validate(Guild guild, GuildSettings settings) {
         List<String> errors = new ArrayList<>();
 
-        settings.logChannel().ifPresent(channelId -> {
-            TextChannel channel = guild.getTextChannelById(channelId);
-            if (channel == null) {
-                errors.add("Der Log-Kanal existiert nicht oder ist kein Textkanal.");
-            } else if (!guild.getSelfMember().hasPermission(channel,
-                    Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS)) {
-                errors.add("Der Bot kann in " + channel.getAsMention() + " keine Nachrichten senden.");
-            }
-        });
-
         if (settings.dashboardRoleIds().size() > MAX_DASHBOARD_ROLES) {
             errors.add("Es sind maximal " + MAX_DASHBOARD_ROLES + " Dashboard-Rollen erlaubt.");
         }
@@ -41,6 +28,8 @@ public final class GuildSettingsValidator {
                 errors.add("Die Rolle " + roleId + " existiert nicht.");
             } else if (role.isPublicRole()) {
                 errors.add("@everyone kann nicht als Dashboard-Rolle verwendet werden.");
+            } else if (role.isManaged()) {
+                errors.add("Die Rolle " + role.getName() + " gehört zu einer Integration und kann nicht verwendet werden.");
             }
         }
         return errors;
