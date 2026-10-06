@@ -5,13 +5,20 @@ import de.notjan.bot.api.ApiController;
 import de.notjan.bot.api.GuildGuard;
 import de.notjan.bot.api.dto.GuildDto;
 import de.notjan.bot.guild.GuildSettingsService;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.javalin.http.Context;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.ApplicationInfo;
+import net.dv8tion.jda.api.entities.ApplicationTeam;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.SelfUser;
+import net.dv8tion.jda.api.entities.TeamMember;
 
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,9 +28,15 @@ import static io.javalin.apibuilder.ApiBuilder.get;
 
 public final class SystemController implements ApiController {
 
+    private static final Set<TeamMember.RoleType> INVITER_ROLES =
+            EnumSet.of(TeamMember.RoleType.OWNER, TeamMember.RoleType.ADMIN, TeamMember.RoleType.DEVELOPER);
+
     private final JDA jda;
     private final AccessService access;
     private final GuildSettingsService settings;
+    private final Cache<String, InvitePolicy> invitePolicy = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(5))
+            .build();
 
     public SystemController(JDA jda, AccessService access, GuildSettingsService settings) {
         this.jda = jda;
@@ -44,11 +57,27 @@ public final class SystemController implements ApiController {
 
     private void bot(Context ctx) {
         SelfUser self = jda.getSelfUser();
+        InvitePolicy policy = invitePolicy.get("application", key -> loadInvitePolicy());
         ctx.json(new BotInfo(
                 self.getId(),
                 self.getName(),
                 self.getEffectiveAvatarUrl(),
-                jda.getGuilds().stream().map(ISnowflake::getId).toList()));
+                jda.getGuilds().stream().map(ISnowflake::getId).toList(),
+                policy.publicBot(),
+                policy.inviterIds()));
+    }
+
+    private InvitePolicy loadInvitePolicy() {
+        ApplicationInfo info = jda.retrieveApplicationInfo().complete();
+        ApplicationTeam team = info.getTeam();
+        List<String> inviters = team == null
+                ? List.of(info.getOwner().getId())
+                : team.getMembers().stream()
+                        .filter(member -> member.getMembershipState() == TeamMember.MembershipState.ACCEPTED)
+                        .filter(member -> INVITER_ROLES.contains(member.getRoleType()) || member.getUser().getIdLong() == team.getOwnerIdLong())
+                        .map(member -> member.getUser().getId())
+                        .toList();
+        return new InvitePolicy(info.isBotPublic(), inviters);
     }
 
     private void userGuilds(Context ctx) {
@@ -70,6 +99,9 @@ public final class SystemController implements ApiController {
     record Health(String status, String gateway, int guilds) {
     }
 
-    record BotInfo(String id, String username, String avatarUrl, List<String> guildIds) {
+    record BotInfo(String id, String username, String avatarUrl, List<String> guildIds, boolean publicBot, List<String> inviterIds) {
+    }
+
+    record InvitePolicy(boolean publicBot, List<String> inviterIds) {
     }
 }
