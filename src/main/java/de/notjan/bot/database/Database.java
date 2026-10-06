@@ -8,9 +8,6 @@ import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Owns the connection pool, runs schema migrations on startup and exposes JDBI for repositories.
- */
 public final class Database implements AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Database.class);

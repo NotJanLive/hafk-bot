@@ -4,7 +4,9 @@ import de.notjan.bot.core.command.SlashCommand;
 import de.notjan.bot.core.component.ComponentHandler;
 import de.notjan.bot.core.component.ComponentId;
 import de.notjan.bot.util.Replies;
+import de.notjan.bot.util.UserFacingException;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent;
@@ -17,10 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-/**
- * Single entry point for all interactions. Dispatches slash commands by name and components by
- * namespace, and turns unexpected exceptions into a friendly ephemeral error message.
- */
 final class InteractionRouter extends ListenerAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(InteractionRouter.class);
@@ -41,6 +39,19 @@ final class InteractionRouter extends ListenerAdapter {
             return;
         }
         run(event, "/" + event.getName(), () -> command.execute(event));
+    }
+
+    @Override
+    public void onCommandAutoCompleteInteraction(CommandAutoCompleteInteractionEvent event) {
+        SlashCommand command = commands.get(event.getName());
+        if (command == null) {
+            return;
+        }
+        try {
+            command.autocomplete(event);
+        } catch (Exception e) {
+            LOG.warn("Autocomplete for /{} failed", event.getName(), e);
+        }
     }
 
     @Override
@@ -82,6 +93,8 @@ final class InteractionRouter extends ListenerAdapter {
     private void run(IReplyCallback event, String label, Runnable action) {
         try {
             action.run();
+        } catch (UserFacingException e) {
+            Replies.error(event, String.join("\n", e.errors()));
         } catch (Exception e) {
             LOG.error("Interaction {} failed in guild {}", label, event.getGuild() == null ? "-" : event.getGuild().getId(), e);
             Replies.error(event, "Da ist etwas schiefgelaufen. Bitte versuche es erneut.");

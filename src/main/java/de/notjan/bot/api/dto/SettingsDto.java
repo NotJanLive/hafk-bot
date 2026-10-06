@@ -4,9 +4,6 @@ import de.notjan.bot.guild.GuildSettings;
 
 import java.util.List;
 
-/**
- * Core guild settings as exchanged with the dashboard. {@code PUT} replaces the whole object.
- */
 public record SettingsDto(List<String> dashboardRoleIds, boolean setupCompleted) {
 
     public static SettingsDto of(GuildSettings settings) {

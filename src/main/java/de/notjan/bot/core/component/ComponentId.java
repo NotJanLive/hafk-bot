@@ -3,10 +3,6 @@ package de.notjan.bot.core.component;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Structured custom ID for buttons, select menus and modals: {@code namespace:action[:arg...]}.
- * Discord limits custom IDs to 100 characters.
- */
 public record ComponentId(String namespace, String action, List<String> args) {
 
     private static final String SEPARATOR = ":";

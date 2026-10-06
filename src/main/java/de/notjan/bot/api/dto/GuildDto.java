@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.entities.channel.attribute.ICategorizableChannel;
 import net.dv8tion.jda.api.entities.channel.attribute.IPositionableChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -12,10 +13,6 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Guild views for the dashboard. All Discord IDs are strings because JavaScript numbers cannot
- * represent snowflakes exactly.
- */
 public final class GuildDto {
 
     private GuildDto() {
@@ -78,6 +75,13 @@ public final class GuildDto {
         static RoleView of(Role role) {
             var color = role.getColors().getPrimaryRaw();
             return new RoleView(role.getId(), role.getName(), color, role.getPosition(), role.isManaged());
+        }
+    }
+
+    public record EmojiView(String id, String name, boolean animated) {
+
+        public static EmojiView of(RichCustomEmoji emoji) {
+            return new EmojiView(emoji.getId(), emoji.getName(), emoji.isAnimated());
         }
     }
 }

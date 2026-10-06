@@ -2,12 +2,6 @@ package de.notjan.bot.guild;
 
 import java.util.Set;
 
-/**
- * Core per-guild configuration. Feature modules keep their own tables keyed by {@code guild_id}.
- *
- * @param dashboardRoleIds roles that may use the dashboard in addition to admins / "Manage Server"
- * @param setupCompleted   whether the first-time setup in the dashboard was finished
- */
 public record GuildSettings(long guildId, Set<Long> dashboardRoleIds, boolean setupCompleted) {
 
     public GuildSettings {

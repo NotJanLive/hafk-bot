@@ -51,10 +51,6 @@ public final class SystemController implements ApiController {
                 jda.getGuilds().stream().map(ISnowflake::getId).toList()));
     }
 
-    /**
-     * Guilds the user may manage. {@code ?candidates=id,id} narrows the check to the guilds the
-     * dashboard already knows the user is in, which avoids needless member lookups.
-     */
     private void userGuilds(Context ctx) {
         long userId = GuildGuard.snowflake(ctx.pathParam("userId"), "userId");
         Optional<Set<String>> candidates = Optional.ofNullable(ctx.queryParam("candidates"))

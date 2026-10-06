@@ -8,9 +8,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Records who changed what. Entries are shown in the dashboard's audit log.
- */
 public final class AuditLogService {
 
     private final AuditLogRepository repository;
@@ -21,11 +18,16 @@ public final class AuditLogService {
         this.json = json;
     }
 
-    /**
-     * @param summary human readable German sentence, e.g. "Dashboard-Rollen: <@&123>"
-     */
     public void record(Guild guild, long userId, Source source, String action, String summary, Map<String, ?> details) {
         repository.insert(guild.getIdLong(), userId, source, action, summary, toJson(details));
+    }
+
+    public long count(long guildId) {
+        return repository.count(guildId);
+    }
+
+    public void deleteAll(long guildId) {
+        repository.deleteAll(guildId);
     }
 
     public List<AuditEntry> recent(long guildId, int limit) {

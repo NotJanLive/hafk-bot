@@ -2,9 +2,6 @@ package de.notjan.bot.util;
 
 import java.awt.Color;
 
-/**
- * Shared visual identity for embeds and panels. Keep in sync with the dashboard theme tokens.
- */
 public final class Brand {
 
     public static final String NAME = "HAFK-Bot";

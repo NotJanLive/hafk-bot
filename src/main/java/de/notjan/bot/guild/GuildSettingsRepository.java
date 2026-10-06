@@ -14,7 +14,6 @@ public final class GuildSettingsRepository {
         this.jdbi = jdbi;
     }
 
-    /** Loads the settings of a guild, creating the default row on first access. */
     public GuildSettings findOrCreate(long guildId) {
         return jdbi.inTransaction(handle -> {
             handle.createUpdate("INSERT IGNORE INTO guild_settings (guild_id) VALUES (:guildId)")
@@ -41,6 +40,12 @@ public final class GuildSettingsRepository {
                 batch.execute();
             }
         });
+    }
+
+    public void delete(long guildId) {
+        jdbi.useHandle(handle -> handle.createUpdate("DELETE FROM guild_settings WHERE guild_id = :guildId")
+                .bind("guildId", guildId)
+                .execute());
     }
 
     private static GuildSettings load(Handle handle, long guildId) {

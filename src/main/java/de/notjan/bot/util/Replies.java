@@ -6,9 +6,6 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 
 import java.awt.Color;
 
-/**
- * Consistent ephemeral feedback for interactions, regardless of whether they were already acknowledged.
- */
 public final class Replies {
 
     private Replies() {

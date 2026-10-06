@@ -6,13 +6,8 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Decides who may manage a guild through the dashboard. Kept free of JDA entities so the rule is
- * trivially testable.
- */
 public final class DashboardAccess {
 
-    /** Why access was granted, ordered from strongest to weakest. */
     public enum Grant {
         OWNER,
         ADMINISTRATOR,

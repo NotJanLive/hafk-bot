@@ -4,9 +4,6 @@ import de.notjan.bot.audit.AuditEntry;
 
 import java.time.Instant;
 
-/**
- * @param userName display name if the user is cached, otherwise {@code null} (the dashboard falls back to the ID)
- */
 public record AuditEntryDto(
         String id,
         String userId,

@@ -7,10 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Set;
 
-/**
- * Shared-secret authentication between dashboard backend and bot. The API is never exposed
- * publicly; this is defense in depth on top of network isolation.
- */
 public final class ApiAuth implements Handler {
 
     private static final String PREFIX = "Bearer ";

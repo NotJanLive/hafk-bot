@@ -14,11 +14,11 @@ class BotConfigTest {
 
     private static Map<String, String> validEnv() {
         Map<String, String> env = new HashMap<>();
-        env.put("DISCORD_BOT_TOKEN", "token");
+        env.put("BOT_TOKEN", "token");
         env.put("DB_URL", "jdbc:mariadb://localhost:3306/hafk");
         env.put("DB_USER", "hafk");
         env.put("DB_PASSWORD", "secret");
-        env.put("BOT_API_TOKEN", "a".repeat(BotConfig.MIN_API_TOKEN_LENGTH));
+        env.put("SHARED_SECRET", "a".repeat(BotConfig.MIN_API_TOKEN_LENGTH));
         return env;
     }
 
@@ -50,10 +50,10 @@ class BotConfigTest {
     @Test
     void failsOnMissingRequiredValue() {
         Map<String, String> env = validEnv();
-        env.remove("DISCORD_BOT_TOKEN");
+        env.remove("BOT_TOKEN");
 
         var error = assertThrows(ConfigException.class, () -> BotConfig.from(env::get));
-        assertTrue(error.getMessage().contains("DISCORD_BOT_TOKEN"));
+        assertTrue(error.getMessage().contains("BOT_TOKEN"));
     }
 
     @Test
@@ -67,7 +67,7 @@ class BotConfigTest {
     @Test
     void rejectsShortApiToken() {
         Map<String, String> env = validEnv();
-        env.put("BOT_API_TOKEN", "too-short");
+        env.put("SHARED_SECRET", "too-short");
 
         assertThrows(ConfigException.class, () -> BotConfig.from(env::get));
     }

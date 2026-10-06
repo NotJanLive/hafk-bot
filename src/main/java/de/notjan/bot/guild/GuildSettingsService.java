@@ -6,10 +6,6 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.time.Duration;
 import java.util.function.UnaryOperator;
 
-/**
- * Cached access to {@link GuildSettings}. All writes go through {@link #update} so the cache never
- * diverges from the database.
- */
 public final class GuildSettingsService {
 
     private final GuildSettingsRepository repository;
@@ -27,7 +23,13 @@ public final class GuildSettingsService {
         return cache.get(guildId);
     }
 
-    /** Applies a change atomically per guild and persists it before the cache is updated. */
+    public void delete(long guildId) {
+        cache.asMap().compute(guildId, (id, current) -> {
+            repository.delete(id);
+            return null;
+        });
+    }
+
     public GuildSettings update(long guildId, UnaryOperator<GuildSettings> change) {
         return cache.asMap().compute(guildId, (id, current) -> {
             GuildSettings base = current != null ? current : repository.findOrCreate(id);
