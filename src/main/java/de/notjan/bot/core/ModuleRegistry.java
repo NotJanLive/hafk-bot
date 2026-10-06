@@ -1,8 +1,10 @@
 package de.notjan.bot.core;
 
+import de.notjan.bot.api.ApiContext;
 import de.notjan.bot.api.ApiController;
 import de.notjan.bot.core.command.SlashCommand;
 import de.notjan.bot.core.component.ComponentHandler;
+import de.notjan.bot.reset.ResettableData;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -18,10 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Collects commands, component handlers, listeners and API controllers from all modules and
- * fails fast on duplicate command names or component namespaces.
- */
 public final class ModuleRegistry {
 
     private static final Logger LOG = LoggerFactory.getLogger(ModuleRegistry.class);
@@ -52,13 +50,14 @@ public final class ModuleRegistry {
         return listeners;
     }
 
-    public List<ApiController> apiControllers(JDA jda) {
-        return modules.stream().flatMap(module -> module.apiControllers(jda).stream()).toList();
+    public List<ApiController> apiControllers(ApiContext context) {
+        return modules.stream().flatMap(module -> module.apiControllers(context).stream()).toList();
     }
 
-    /**
-     * Registers commands globally, or only in the dev guild when configured (instant updates while developing).
-     */
+    public List<ResettableData> resettableData() {
+        return modules.stream().flatMap(module -> module.resettableData().stream()).toList();
+    }
+
     public void registerCommands(JDA jda, Optional<Long> devGuildId) {
         List<CommandData> data = commands.values().stream().<CommandData>map(SlashCommand::data).toList();
         if (devGuildId.isPresent()) {

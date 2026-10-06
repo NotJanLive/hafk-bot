@@ -7,10 +7,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Makes sure every guild the bot is in has a settings row. Data is kept when the bot leaves,
- * so a re-invite restores the previous configuration.
- */
 public final class GuildLifecycleListener extends ListenerAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(GuildLifecycleListener.class);

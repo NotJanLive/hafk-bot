@@ -18,9 +18,6 @@ import static io.javalin.apibuilder.ApiBuilder.get;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Runs the real Javalin server with stub controllers to verify auth and error rendering end to end.
- */
 class ApiServerTest {
 
     private static final String TOKEN = "t".repeat(40);

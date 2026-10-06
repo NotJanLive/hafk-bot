@@ -6,10 +6,6 @@ import io.javalin.http.Context;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 
-/**
- * Resolves the guild of a request and re-checks that the acting dashboard user may manage it.
- * The dashboard checks access too, but the bot is the source of truth.
- */
 public final class GuildGuard {
 
     public static final String ACTING_USER_HEADER = "X-Acting-User";
@@ -33,6 +29,14 @@ public final class GuildGuard {
         Grant grant = access.check(guild, userId)
                 .orElseThrow(() -> ApiException.forbidden("Kein Zugriff auf diesen Server."));
         return new GuildRequest(guild, userId, grant);
+    }
+
+    public GuildRequest requireAdmin(Context ctx) {
+        GuildRequest request = require(ctx);
+        if (request.grant() == Grant.DASHBOARD_ROLE) {
+            throw ApiException.forbidden("Nur Admins und Mitglieder mit „Server verwalten“ dürfen das.");
+        }
+        return request;
     }
 
     public static long actingUser(Context ctx) {

@@ -2,6 +2,7 @@ package de.notjan.bot.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.notjan.bot.config.BotConfig.ApiConfig;
+import de.notjan.bot.util.UserFacingException;
 import io.javalin.Javalin;
 import io.javalin.http.HttpResponseException;
 import io.javalin.json.JavalinJackson;
@@ -12,9 +13,6 @@ import java.util.List;
 
 import static io.javalin.apibuilder.ApiBuilder.path;
 
-/**
- * Internal REST API consumed by the dashboard backend. Binds to {@code BOT_API_HOST} (default localhost).
- */
 public final class ApiServer implements AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApiServer.class);
@@ -34,6 +32,12 @@ public final class ApiServer implements AutoCloseable {
             javalin.routes.apiBuilder(() -> path("/api/v1", () -> controllers.forEach(ApiController::addEndpoints)));
 
             javalin.routes.exception(ApiException.class, (e, ctx) -> ctx.status(e.status()).json(e.body()));
+            javalin.routes.exception(UserFacingException.class, (e, ctx) -> {
+                var error = e.isNotFound()
+                        ? new ApiException(404, "not_found", e.getMessage())
+                        : ApiException.validation(e.errors());
+                ctx.status(error.status()).json(error.body());
+            });
             javalin.routes.exception(HttpResponseException.class, (e, ctx) -> {
                 var error = new ApiException(e.getStatus(), "http_" + e.getStatus(), e.getMessage());
                 ctx.status(e.getStatus()).json(error.body());

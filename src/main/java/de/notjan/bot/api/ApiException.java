@@ -2,9 +2,6 @@ package de.notjan.bot.api;
 
 import java.util.List;
 
-/**
- * Expected API failure, rendered as {@code {"error": {"code": ..., "message": ..., "details": [...]}}}.
- */
 public class ApiException extends RuntimeException {
 
     private final int status;

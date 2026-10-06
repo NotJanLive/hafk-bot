@@ -12,9 +12,6 @@ import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-/**
- * Points admins to the dashboard. All configuration, including the first setup, happens there.
- */
 final class DashboardCommand implements SlashCommand {
 
     private final DashboardLinks links;

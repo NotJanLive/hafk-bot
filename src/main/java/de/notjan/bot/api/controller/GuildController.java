@@ -16,6 +16,7 @@ import de.notjan.bot.guild.SettingsUpdater;
 import io.javalin.http.Context;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,7 @@ public final class GuildController implements ApiController {
         get("/guilds/{guildId}/settings", this::getSettings);
         put("/guilds/{guildId}/settings", this::putSettings);
         get("/guilds/{guildId}/audit-log", this::auditLog);
+        get("/guilds/{guildId}/emojis", this::emojis);
     }
 
     private void detail(Context ctx) {
@@ -86,7 +88,14 @@ public final class GuildController implements ApiController {
                 .toList());
     }
 
-    /** Uses the member cache only; resolving unknown users via REST would be too expensive per entry. */
+    private void emojis(Context ctx) {
+        GuildRequest request = guard.require(ctx);
+        ctx.json(request.guild().retrieveEmojis().complete().stream()
+                .filter(RichCustomEmoji::isAvailable)
+                .map(GuildDto.EmojiView::of)
+                .toList());
+    }
+
     private static String cachedName(Guild guild, long userId) {
         Member member = guild.getMemberById(userId);
         return member == null ? null : member.getUser().getName();

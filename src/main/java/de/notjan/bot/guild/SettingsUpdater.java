@@ -12,10 +12,6 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-/**
- * The single write path for core settings: validate against the live guild, persist, audit.
- * Shared by the dashboard API and the /setup panel so both behave identically.
- */
 public final class SettingsUpdater {
 
     private final GuildSettingsService settings;
@@ -30,9 +26,6 @@ public final class SettingsUpdater {
         return settings.get(guildId);
     }
 
-    /**
-     * @throws InvalidSettingsException if the resulting settings reference unusable channels or roles
-     */
     public GuildSettings apply(Guild guild, long userId, Source source, UnaryOperator<GuildSettings> change) {
         GuildSettings before = settings.get(guild.getIdLong());
         List<String> errors = GuildSettingsValidator.validate(guild, change.apply(before));

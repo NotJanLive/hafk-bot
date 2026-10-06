@@ -10,10 +10,6 @@ import net.dv8tion.jda.api.requests.ErrorResponse;
 
 import java.util.Optional;
 
-/**
- * Resolves a member live from Discord and applies {@link DashboardAccess}. Members are kept in
- * JDA's cache (GUILD_MEMBERS intent), so role changes take effect immediately.
- */
 public final class AccessService {
 
     private final GuildSettingsService settings;

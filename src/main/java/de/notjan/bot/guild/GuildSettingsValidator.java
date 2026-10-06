@@ -6,9 +6,6 @@ import net.dv8tion.jda.api.entities.Role;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Checks settings against the live guild state, so no references to missing or unusable roles are stored.
- */
 public final class GuildSettingsValidator {
 
     public static final int MAX_DASHBOARD_ROLES = 25;

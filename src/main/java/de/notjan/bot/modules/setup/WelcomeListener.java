@@ -12,10 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
-/**
- * Greets a new guild and asks an admin to finish the setup in the dashboard.
- * Skipped when the bot is re-invited to an already configured guild.
- */
 final class WelcomeListener extends ListenerAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(WelcomeListener.class);
@@ -52,7 +48,6 @@ final class WelcomeListener extends ListenerAdapter {
                 .queue(null, error -> LOG.warn("Failed to send welcome message in guild {}", guild.getId(), error));
     }
 
-    /** Prefers the system channel, otherwise the first text channel the bot can write to. */
     private static Optional<TextChannel> welcomeChannel(Guild guild) {
         TextChannel system = guild.getSystemChannel();
         if (system != null && system.canTalk()) {

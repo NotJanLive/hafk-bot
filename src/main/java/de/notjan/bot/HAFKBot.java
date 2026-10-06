@@ -2,6 +2,7 @@ package de.notjan.bot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.notjan.bot.access.AccessService;
+import de.notjan.bot.api.ApiContext;
 import de.notjan.bot.api.ApiController;
 import de.notjan.bot.api.ApiServer;
 import de.notjan.bot.api.GuildGuard;
@@ -17,7 +18,20 @@ import de.notjan.bot.guild.GuildLifecycleListener;
 import de.notjan.bot.guild.GuildSettingsRepository;
 import de.notjan.bot.guild.GuildSettingsService;
 import de.notjan.bot.guild.SettingsUpdater;
+import de.notjan.bot.message.BotChannelRepository;
+import de.notjan.bot.message.BotMessageCleanupListener;
+import de.notjan.bot.message.BotMessageRepository;
+import de.notjan.bot.message.BotMessageService;
+import de.notjan.bot.modules.embeds.EmbedService;
+import de.notjan.bot.modules.embeds.EmbedTemplateRepository;
+import de.notjan.bot.modules.embeds.EmbedsModule;
+import de.notjan.bot.modules.reactionroles.ReactionRoleRepository;
+import de.notjan.bot.modules.reactionroles.ReactionRoleService;
+import de.notjan.bot.modules.reactionroles.ReactionRolesModule;
 import de.notjan.bot.modules.setup.SetupModule;
+import de.notjan.bot.reset.ResetController;
+import de.notjan.bot.reset.ResetService;
+import de.notjan.bot.reset.ResettableData;
 import de.notjan.bot.util.Json;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -35,8 +49,7 @@ public final class HAFKBot {
 
     private static final Logger LOG = LoggerFactory.getLogger(HAFKBot.class);
 
-    /** Needed by the core itself: live role checks for dashboard access. Modules add their own. */
-    private static final Set<GatewayIntent> CORE_INTENTS = Set.of(GatewayIntent.GUILD_MEMBERS);
+    private static final Set<GatewayIntent> CORE_INTENTS = Set.of(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES);
 
     private HAFKBot() {
     }
@@ -51,15 +64,30 @@ public final class HAFKBot {
         SettingsUpdater settingsUpdater = new SettingsUpdater(settings, audit);
         AccessService access = new AccessService(settings);
 
+        BotMessageRepository messageRepository = new BotMessageRepository(database.jdbi(), json);
+        BotChannelRepository channelRepository = new BotChannelRepository(database.jdbi());
+        BotMessageService messages = new BotMessageService(messageRepository);
+
         List<BotModule> modules = List.of(
-                new SetupModule(settings, config.dashboardUrl())
+                new SetupModule(settings, config.dashboardUrl()),
+                new EmbedsModule(new EmbedService(messages, new EmbedTemplateRepository(database.jdbi(), json), audit), access),
+                new ReactionRolesModule(new ReactionRoleService(new ReactionRoleRepository(database.jdbi()), messages, audit))
         );
         ModuleRegistry registry = new ModuleRegistry(modules);
+
+        List<ResettableData> resettable = new ArrayList<>(List.of(
+                ResettableData.required("core.settings", "Einstellungen & Einrichtung",
+                        "Dashboard-Rollen und Einrichtungsstatus. Danach startet die Einrichtung neu.",
+                        guildId -> 1, settings::delete),
+                ResettableData.of("core.audit-log", "Änderungsprotokoll", "Alle bisherigen Einträge des Protokolls",
+                        audit::count, audit::deleteAll)));
+        resettable.addAll(registry.resettableData());
+        ResetService reset = new ResetService(resettable, messages, channelRepository, audit);
 
         JDA jda = JDABuilder.createLight(config.discordToken(), registry.intents(CORE_INTENTS))
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .setActivity(Activity.watching("Hans & Friends"))
-                .addEventListeners(new GuildLifecycleListener(settings))
+                .addEventListeners(new GuildLifecycleListener(settings), new BotMessageCleanupListener(messageRepository, channelRepository))
                 .addEventListeners(registry.listeners().toArray())
                 .build()
                 .awaitReady();
@@ -68,8 +96,9 @@ public final class HAFKBot {
         GuildGuard guard = new GuildGuard(jda, access);
         List<ApiController> controllers = new ArrayList<>(List.of(
                 new SystemController(jda, access, settings),
-                new GuildController(guard, settings, settingsUpdater, audit)));
-        controllers.addAll(registry.apiControllers(jda));
+                new GuildController(guard, settings, settingsUpdater, audit),
+                new ResetController(guard, reset)));
+        controllers.addAll(registry.apiControllers(new ApiContext(jda, guard)));
         ApiServer api = ApiServer.start(config.api(), json, controllers);
 
         LOG.info("{} ready in {} guild(s) with modules {}", jda.getSelfUser().getName(), jda.getGuilds().size(), registry.moduleIds());

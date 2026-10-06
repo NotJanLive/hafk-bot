@@ -28,7 +28,6 @@
     </properties>
 
     <dependencies>
-        <!-- Discord -->
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
@@ -41,7 +40,6 @@
             </exclusions>
         </dependency>
 
-        <!-- Internal REST API for the dashboard -->
         <dependency>
             <groupId>io.javalin</groupId>
             <artifactId>javalin</artifactId>
@@ -58,7 +56,6 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!-- Database -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
@@ -80,7 +77,6 @@
             <version>${jdbi.version}</version>
         </dependency>
 
-        <!-- Utilities -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
@@ -97,7 +93,6 @@
             <version>${logback.version}</version>
         </dependency>
 
-        <!-- Tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>

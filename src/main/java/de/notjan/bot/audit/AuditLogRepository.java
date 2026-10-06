@@ -26,6 +26,19 @@ public final class AuditLogRepository {
                 .execute());
     }
 
+    public long count(long guildId) {
+        return jdbi.withHandle(handle -> handle.createQuery("SELECT COUNT(*) FROM audit_log WHERE guild_id = :guildId")
+                .bind("guildId", guildId)
+                .mapTo(Long.class)
+                .one());
+    }
+
+    public void deleteAll(long guildId) {
+        jdbi.useHandle(handle -> handle.createUpdate("DELETE FROM audit_log WHERE guild_id = :guildId")
+                .bind("guildId", guildId)
+                .execute());
+    }
+
     public List<AuditEntry> recent(long guildId, int limit) {
         return jdbi.withHandle(handle -> handle.createQuery("""
                         SELECT id, guild_id, user_id, source, action, summary, details, created_at

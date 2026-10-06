@@ -5,10 +5,6 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 
-/**
- * Handles all components whose {@link ComponentId#namespace()} matches {@link #namespace()}.
- * Override only the interaction types the handler actually uses.
- */
 public interface ComponentHandler {
 
     String namespace();

@@ -6,9 +6,6 @@ import de.notjan.bot.guild.GuildSettingsService;
 
 import java.util.List;
 
-/**
- * Onboarding: greets new guilds and links admins to the dashboard, where the setup happens.
- */
 public final class SetupModule implements BotModule {
 
     private final DashboardLinks links;
