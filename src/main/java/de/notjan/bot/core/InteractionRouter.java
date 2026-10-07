@@ -1,5 +1,6 @@
 package de.notjan.bot.core;
 
+import de.notjan.bot.core.command.MessageCommand;
 import de.notjan.bot.core.command.SlashCommand;
 import de.notjan.bot.core.component.ComponentHandler;
 import de.notjan.bot.core.component.ComponentId;
@@ -7,6 +8,7 @@ import de.notjan.bot.util.Replies;
 import de.notjan.bot.util.UserFacingException;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent;
@@ -24,10 +26,13 @@ final class InteractionRouter extends ListenerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(InteractionRouter.class);
 
     private final Map<String, SlashCommand> commands;
+    private final Map<String, MessageCommand> messageCommands;
     private final Map<String, ComponentHandler> handlers;
 
-    InteractionRouter(Map<String, SlashCommand> commands, Map<String, ComponentHandler> handlers) {
+    InteractionRouter(Map<String, SlashCommand> commands, Map<String, MessageCommand> messageCommands,
+                      Map<String, ComponentHandler> handlers) {
         this.commands = Map.copyOf(commands);
+        this.messageCommands = Map.copyOf(messageCommands);
         this.handlers = Map.copyOf(handlers);
     }
 
@@ -39,6 +44,16 @@ final class InteractionRouter extends ListenerAdapter {
             return;
         }
         run(event, "/" + event.getName(), () -> command.execute(event));
+    }
+
+    @Override
+    public void onMessageContextInteraction(MessageContextInteractionEvent event) {
+        MessageCommand command = messageCommands.get(event.getName());
+        if (command == null) {
+            LOG.warn("Received unknown message command {}", event.getName());
+            return;
+        }
+        run(event, "message command " + event.getName(), () -> command.execute(event));
     }
 
     @Override

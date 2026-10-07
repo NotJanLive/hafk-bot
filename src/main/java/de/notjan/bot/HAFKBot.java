@@ -25,6 +25,9 @@ import de.notjan.bot.message.BotMessageService;
 import de.notjan.bot.modules.embeds.EmbedService;
 import de.notjan.bot.modules.embeds.EmbedTemplateRepository;
 import de.notjan.bot.modules.embeds.EmbedsModule;
+import de.notjan.bot.modules.polls.PollRepository;
+import de.notjan.bot.modules.polls.PollService;
+import de.notjan.bot.modules.polls.PollsModule;
 import de.notjan.bot.modules.reactionroles.ReactionRoleRepository;
 import de.notjan.bot.modules.reactionroles.ReactionRoleService;
 import de.notjan.bot.modules.reactionroles.ReactionRolesModule;
@@ -71,7 +74,8 @@ public final class HAFKBot {
         List<BotModule> modules = List.of(
                 new SetupModule(settings, config.dashboardUrl()),
                 new EmbedsModule(new EmbedService(messages, new EmbedTemplateRepository(database.jdbi(), json), audit), access),
-                new ReactionRolesModule(new ReactionRoleService(new ReactionRoleRepository(database.jdbi()), messages, audit))
+                new ReactionRolesModule(new ReactionRoleService(new ReactionRoleRepository(database.jdbi()), messages, audit)),
+                new PollsModule(new PollService(new PollRepository(database.jdbi()), messages, audit, access, config.api().token()))
         );
         ModuleRegistry registry = new ModuleRegistry(modules);
 
