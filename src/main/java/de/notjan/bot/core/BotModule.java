@@ -2,6 +2,7 @@ package de.notjan.bot.core;
 
 import de.notjan.bot.api.ApiContext;
 import de.notjan.bot.api.ApiController;
+import de.notjan.bot.core.command.MessageCommand;
 import de.notjan.bot.core.command.SlashCommand;
 import de.notjan.bot.core.component.ComponentHandler;
 import de.notjan.bot.reset.ResettableData;
@@ -19,6 +20,10 @@ public interface BotModule {
     }
 
     default List<SlashCommand> commands() {
+        return List.of();
+    }
+
+    default List<MessageCommand> messageCommands() {
         return List.of();
     }
 

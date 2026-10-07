@@ -2,6 +2,7 @@ package de.notjan.bot.core;
 
 import de.notjan.bot.api.ApiContext;
 import de.notjan.bot.api.ApiController;
+import de.notjan.bot.core.command.MessageCommand;
 import de.notjan.bot.core.command.SlashCommand;
 import de.notjan.bot.core.component.ComponentHandler;
 import de.notjan.bot.reset.ResettableData;
@@ -26,12 +27,14 @@ public final class ModuleRegistry {
 
     private final List<BotModule> modules;
     private final Map<String, SlashCommand> commands = new HashMap<>();
+    private final Map<String, MessageCommand> messageCommands = new HashMap<>();
     private final Map<String, ComponentHandler> componentHandlers = new HashMap<>();
 
     public ModuleRegistry(List<BotModule> modules) {
         this.modules = List.copyOf(modules);
         for (BotModule module : modules) {
             module.commands().forEach(command -> putUnique(commands, command.name(), command, "command"));
+            module.messageCommands().forEach(command -> putUnique(messageCommands, command.name(), command, "message command"));
             module.componentHandlers().forEach(handler -> putUnique(componentHandlers, handler.namespace(), handler, "component namespace"));
         }
     }
@@ -45,7 +48,7 @@ public final class ModuleRegistry {
 
     public List<Object> listeners() {
         List<Object> listeners = new ArrayList<>();
-        listeners.add(new InteractionRouter(commands, componentHandlers));
+        listeners.add(new InteractionRouter(commands, messageCommands, componentHandlers));
         modules.forEach(module -> listeners.addAll(module.eventListeners()));
         return listeners;
     }
@@ -59,7 +62,8 @@ public final class ModuleRegistry {
     }
 
     public void registerCommands(JDA jda, Optional<Long> devGuildId) {
-        List<CommandData> data = commands.values().stream().<CommandData>map(SlashCommand::data).toList();
+        List<CommandData> data = new ArrayList<>(commands.values().stream().<CommandData>map(SlashCommand::data).toList());
+        messageCommands.values().forEach(command -> data.add(command.data()));
         if (devGuildId.isPresent()) {
             Guild guild = jda.getGuildById(devGuildId.get());
             if (guild == null) {

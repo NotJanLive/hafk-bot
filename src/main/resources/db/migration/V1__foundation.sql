@@ -110,3 +110,78 @@ CREATE TABLE reaction_role_options
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE polls
+(
+    id                BIGINT        NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    guild_id          BIGINT        NOT NULL,
+    channel_id        BIGINT        NOT NULL,
+    message_ref       BIGINT        NULL,
+    question          VARCHAR(256)  NOT NULL,
+    description       VARCHAR(1000) NULL,
+    anonymous         BOOLEAN       NOT NULL,
+    result_visibility VARCHAR(16)   NOT NULL,
+    host_results      BOOLEAN       NOT NULL,
+    max_choices       INT           NOT NULL,
+    allow_change      BOOLEAN       NOT NULL,
+    ping_role_id      BIGINT        NULL,
+    voter_salt        CHAR(32)      NOT NULL,
+    ends_at           TIMESTAMP(3)  NULL,
+    closed_at         TIMESTAMP(3)  NULL,
+    closed_by         BIGINT        NULL,
+    cancelled         BOOLEAN       NOT NULL DEFAULT FALSE,
+    created_by        BIGINT        NOT NULL,
+    created_at        TIMESTAMP(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    UNIQUE KEY uq_polls_message (message_ref),
+    INDEX idx_polls_guild (guild_id),
+    INDEX idx_polls_open (closed_at, ends_at),
+    CONSTRAINT fk_polls_message FOREIGN KEY (message_ref) REFERENCES bot_messages (id) ON DELETE SET NULL
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE poll_options
+(
+    id       BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    poll_id  BIGINT       NOT NULL,
+    label    VARCHAR(80)  NOT NULL,
+    emoji    VARCHAR(100) NULL,
+    position INT          NOT NULL,
+    CONSTRAINT fk_poll_options_poll FOREIGN KEY (poll_id) REFERENCES polls (id) ON DELETE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE poll_allowed_roles
+(
+    poll_id BIGINT NOT NULL,
+    role_id BIGINT NOT NULL,
+    PRIMARY KEY (poll_id, role_id),
+    CONSTRAINT fk_poll_allowed_roles_poll FOREIGN KEY (poll_id) REFERENCES polls (id) ON DELETE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE poll_votes
+(
+    poll_id    BIGINT       NOT NULL,
+    option_id  BIGINT       NOT NULL,
+    voter_key  VARCHAR(64)  NOT NULL,
+    user_id    BIGINT       NULL,
+    created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    PRIMARY KEY (poll_id, voter_key, option_id),
+    INDEX idx_poll_votes_option (option_id),
+    CONSTRAINT fk_poll_votes_poll FOREIGN KEY (poll_id) REFERENCES polls (id) ON DELETE CASCADE,
+    CONSTRAINT fk_poll_votes_option FOREIGN KEY (option_id) REFERENCES poll_options (id) ON DELETE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE poll_creator_roles
+(
+    guild_id BIGINT NOT NULL,
+    role_id  BIGINT NOT NULL,
+    PRIMARY KEY (guild_id, role_id)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
