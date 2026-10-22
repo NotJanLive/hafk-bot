@@ -9,6 +9,7 @@ public record BotConfig(
         String discordToken,
         Optional<Long> devGuildId,
         String dashboardUrl,
+        String storageDir,
         DatabaseConfig database,
         ApiConfig api
 ) {
@@ -38,6 +39,7 @@ public record BotConfig(
                 reader.required("BOT_TOKEN"),
                 reader.optional("DISCORD_DEV_GUILD_ID").map(value -> reader.parseLong("DISCORD_DEV_GUILD_ID", value)),
                 stripTrailingSlash(reader.optional("DASHBOARD_URL").orElse("http://localhost:3000")),
+                reader.optional("STORAGE_DIR").orElse("data"),
                 new DatabaseConfig(
                         reader.required("DB_URL"),
                         reader.required("DB_USER"),

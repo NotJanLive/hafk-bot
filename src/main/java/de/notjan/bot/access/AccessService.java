@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 
 import java.util.Optional;
+import java.util.Set;
 
 public final class AccessService {
 
@@ -24,6 +25,10 @@ public final class AccessService {
                 member.getPermissions(),
                 member.getRoles().stream().map(ISnowflake::getIdLong).toList(),
                 settings.get(guild.getIdLong()).dashboardRoleIds()));
+    }
+
+    public Set<Long> dashboardRoleIds(Guild guild) {
+        return settings.get(guild.getIdLong()).dashboardRoleIds();
     }
 
     private static Optional<Member> findMember(Guild guild, long userId) {

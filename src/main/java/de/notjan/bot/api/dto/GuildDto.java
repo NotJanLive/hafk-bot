@@ -63,7 +63,7 @@ public final class GuildDto {
 
     public record Channel(String id, String name, String type, String parentId, int position) {
 
-        static Channel of(GuildChannel channel) {
+        public static Channel of(GuildChannel channel) {
             String parentId = channel instanceof ICategorizableChannel categorizable ? categorizable.getParentCategoryId() : null;
             int position = channel instanceof IPositionableChannel positionable ? positionable.getPosition() : 0;
             return new Channel(channel.getId(), channel.getName(), channel.getType().name().toLowerCase(), parentId, position);
@@ -75,6 +75,14 @@ public final class GuildDto {
         static RoleView of(Role role) {
             var color = role.getColors().getPrimaryRaw();
             return new RoleView(role.getId(), role.getName(), color, role.getPosition(), role.isManaged());
+        }
+    }
+
+    public record MemberView(String id, String name, String username, String avatarUrl, boolean bot) {
+
+        public static MemberView of(Member member) {
+            return new MemberView(member.getId(), member.getEffectiveName(), member.getUser().getName(), member.getEffectiveAvatarUrl(),
+                    member.getUser().isBot());
         }
     }
 

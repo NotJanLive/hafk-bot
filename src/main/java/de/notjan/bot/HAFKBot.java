@@ -32,6 +32,7 @@ import de.notjan.bot.modules.reactionroles.ReactionRoleRepository;
 import de.notjan.bot.modules.reactionroles.ReactionRoleService;
 import de.notjan.bot.modules.reactionroles.ReactionRolesModule;
 import de.notjan.bot.modules.setup.SetupModule;
+import de.notjan.bot.modules.tickets.TicketsModule;
 import de.notjan.bot.reset.ResetController;
 import de.notjan.bot.reset.ResetService;
 import de.notjan.bot.reset.ResettableData;
@@ -41,6 +42,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +77,8 @@ public final class HAFKBot {
                 new SetupModule(settings, config.dashboardUrl()),
                 new EmbedsModule(new EmbedService(messages, new EmbedTemplateRepository(database.jdbi(), json), audit), access),
                 new ReactionRolesModule(new ReactionRoleService(new ReactionRoleRepository(database.jdbi()), messages, audit)),
-                new PollsModule(new PollService(new PollRepository(database.jdbi()), messages, audit, access, config.api().token()))
+                new PollsModule(new PollService(new PollRepository(database.jdbi()), messages, audit, access, config.api().token())),
+                new TicketsModule(database.jdbi(), json, messages, channelRepository, audit, access, config.dashboardUrl(), config.storageDir())
         );
         ModuleRegistry registry = new ModuleRegistry(modules);
 
@@ -90,6 +93,7 @@ public final class HAFKBot {
 
         JDA jda = JDABuilder.createLight(config.discordToken(), registry.intents(CORE_INTENTS))
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
+                .enableCache(CacheFlag.MEMBER_OVERRIDES)
                 .setActivity(Activity.watching("Hans & Friends"))
                 .addEventListeners(new GuildLifecycleListener(settings), new BotMessageCleanupListener(messageRepository, channelRepository))
                 .addEventListeners(registry.listeners().toArray())
@@ -100,7 +104,7 @@ public final class HAFKBot {
         GuildGuard guard = new GuildGuard(jda, access);
         List<ApiController> controllers = new ArrayList<>(List.of(
                 new SystemController(jda, access, settings),
-                new GuildController(guard, settings, settingsUpdater, audit),
+                new GuildController(guard, settings, settingsUpdater, audit, channelRepository),
                 new ResetController(guard, reset)));
         controllers.addAll(registry.apiControllers(new ApiContext(jda, guard)));
         ApiServer api = ApiServer.start(config.api(), json, controllers);
