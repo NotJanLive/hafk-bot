@@ -2,6 +2,8 @@ package de.notjan.bot.config;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -21,6 +23,7 @@ public record BotConfig(
     }
 
     static final int MIN_API_TOKEN_LENGTH = 32;
+    private static final String CONTAINER_HOME = "/home/container";
 
     public static BotConfig load() {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
@@ -39,7 +42,7 @@ public record BotConfig(
                 reader.required("BOT_TOKEN"),
                 reader.optional("DISCORD_DEV_GUILD_ID").map(value -> reader.parseLong("DISCORD_DEV_GUILD_ID", value)),
                 stripTrailingSlash(reader.optional("DASHBOARD_URL").orElse("http://localhost:3000")),
-                reader.optional("STORAGE_DIR").orElse("data"),
+                reader.optional("STORAGE_DIR").orElseGet(BotConfig::defaultStorageDir),
                 new DatabaseConfig(
                         reader.required("DB_URL"),
                         reader.required("DB_USER"),
@@ -52,6 +55,11 @@ public record BotConfig(
                         apiToken
                 )
         );
+    }
+
+    private static String defaultStorageDir() {
+        Path container = Path.of(CONTAINER_HOME);
+        return Files.isDirectory(container) && Files.isWritable(container) ? container.resolve("data").toString() : "data";
     }
 
     private static String stripTrailingSlash(String url) {
